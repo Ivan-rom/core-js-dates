@@ -70,8 +70,10 @@ function getDayName(date) {
  * Date('2024-02-13T00:00:00Z') => Date('2024-02-16T00:00:00Z')
  * Date('2024-02-16T00:00:00Z') => Date('2024-02-23T00:00:00Z')
  */
-function getNextFriday(/* date */) {
-  throw new Error('Not implemented');
+function getNextFriday(date) {
+  date.setDate(date.getDate() + 1);
+  while (date.getDay() !== 5) date.setDate(date.getDate() + 1);
+  return date;
 }
 
 /**
@@ -177,8 +179,15 @@ function formatDate(date) {
  * 12, 2023 => 10
  * 1, 2024 => 8
  */
-function getCountWeekendsInMonth(/* month, year */) {
-  throw new Error('Not implemented');
+function getCountWeekendsInMonth(month, year) {
+  const current = new Date(year, month - 1);
+  let weekends = 0;
+  while (current.getMonth() === month - 1) {
+    if (current.getDay() === 0 || current.getDay() === 6) weekends += 1;
+
+    current.setDate(current.getDate() + 1);
+  }
+  return weekends;
 }
 
 /**
@@ -262,8 +271,30 @@ function getQuarter(date) {
  * { start: '01-01-2024', end: '15-01-2024' }, 1, 3 => ['01-01-2024', '05-01-2024', '09-01-2024', '13-01-2024']
  * { start: '01-01-2024', end: '10-01-2024' }, 1, 1 => ['01-01-2024', '03-01-2024', '05-01-2024', '07-01-2024', '09-01-2024']
  */
-function getWorkSchedule(/* period, countWorkDays, countOffDays */) {
-  throw new Error('Not implemented');
+function getWorkSchedule(period, countWorkDays, countOffDays) {
+  const result = [];
+
+  const [startDate, startMonth, startYear] = period.start.split('-');
+  const [endDate, endMonth, endYear] = period.end.split('-');
+
+  const end = new Date(endYear, endMonth - 1, endDate);
+  const current = new Date(startYear, startMonth - 1, startDate);
+
+  while (current.valueOf() <= end.valueOf()) {
+    for (
+      let i = 1;
+      i <= countWorkDays && current.valueOf() <= end.valueOf();
+      i += 1
+    ) {
+      result.push(
+        `${current.getDate().toString().padStart(2, '0')}-${(current.getMonth() + 1).toString().padStart(2, '0')}-${current.getFullYear()}`
+      );
+      current.setDate(current.getDate() + 1);
+    }
+    current.setDate(current.getDate() + countOffDays);
+  }
+
+  return result;
 }
 
 /**
